@@ -1,14 +1,14 @@
 #![no_std]
 #![no_main]
 
-mod sipo;
-mod filled_sipo;
-mod seven_segment;
-mod filled_seven_segment;
-mod led_matrix;
 mod animation;
 mod button;
+mod filled_seven_segment;
+mod filled_sipo;
+mod led_matrix;
 mod rng;
+mod seven_segment;
+mod sipo;
 
 use panic_halt as _;
 
@@ -16,8 +16,18 @@ const DIGITS: usize = 4;
 const LED_MATRIX_CORRECT_ROW: u8 = 0;
 const LED_MATRIX_INCORRECT_POSITION_ROW: u8 = 1;
 
-static mut HELLO_ANIMATION: animation::HelloAnimation = animation::HelloAnimation { inner_step: 0, outer_step: 0, hidden: false };
-static mut WIN_ANIMATION: animation::WinAnimation = animation::WinAnimation { number: 0, led_step: 0, led_quarter: 0, led_inner: 0, hidden: true } ;
+static mut HELLO_ANIMATION: animation::HelloAnimation = animation::HelloAnimation {
+    inner_step: 0,
+    outer_step: 0,
+    hidden: false,
+};
+static mut WIN_ANIMATION: animation::WinAnimation = animation::WinAnimation {
+    number: 0,
+    led_step: 0,
+    led_quarter: 0,
+    led_inner: 0,
+    hidden: true,
+};
 
 #[atmega_hal::entry]
 fn main() -> ! {
@@ -34,7 +44,8 @@ fn main() -> ! {
 
     let shift_register = filled_sipo::FilledSipo::create(shift_register);
     let seven_segment = seven_segment::SevenSegment::create(4, true, false);
-    let seven_segment = filled_seven_segment::FilledSevenSegment::create(seven_segment, shift_register);
+    let seven_segment =
+        filled_seven_segment::FilledSevenSegment::create(seven_segment, shift_register);
 
     let mut matrix = led_matrix::LEDMatrix::create(4, 2);
     matrix.add_anode(pins.pd3.into_output().downgrade());
@@ -71,7 +82,7 @@ fn main() -> ! {
         animation: None,
         rng,
         buttons: [btn_1, btn_2, btn_3, btn_4],
-        confirm: btn_confirm
+        confirm: btn_confirm,
     };
 
     unsafe {
@@ -123,13 +134,13 @@ pub struct Game {
     animation: Option<&'static mut dyn animation::Animation>,
     rng: rng::Rng,
     buttons: [button::Button; 4],
-    confirm: button::Button
+    confirm: button::Button,
 }
 
 pub enum GameState {
     Start,
     Play,
-    Won
+    Won,
 }
 
 impl Game {
@@ -139,7 +150,7 @@ impl Game {
                 if self.any_button_pressed() {
                     self.start_new_game();
                 }
-            },
+            }
             GameState::Play => {
                 if self.confirm.state() == button::ButtonState::Pressed {
                     if self.current_number == self.guessing_number {
@@ -218,7 +229,7 @@ impl Game {
         let new_digit: u16 = ((current_digit + 1) % 10).into();
 
         let trimmed_number = current_number % order;
-        let mut new_number = current_number - (current_number % (order*10));
+        let mut new_number = current_number - (current_number % (order * 10));
         new_number += new_digit * order + trimmed_number;
 
         self.current_number = Some(new_number);
@@ -226,8 +237,6 @@ impl Game {
     }
 
     fn end_current_game(&mut self) {
-        // TODO: win animation
-        //self.animation = None;
         unsafe {
             WIN_ANIMATION.reset(self.guessing_number.unwrap());
             self.animation = Some(&mut WIN_ANIMATION);
