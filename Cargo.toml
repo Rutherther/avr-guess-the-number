@@ -1,0 +1,36 @@
+[package]
+name = "guess-the-number"
+version = "0.1.0"
+authors = ["František Boháček <fandabohacek@gmail.com>"]
+edition = "2021"
+
+[[bin]]
+path = "src/entrypoint.rs"
+name = "guess-the-number"
+test = false
+bench = false
+
+[dependencies]
+panic-halt = "0.2.0"
+ufmt = "0.1.0"
+nb = "0.1.2"
+
+[dependencies.atmega-hal]
+path = "../avr-hal/mcu/atmega-hal"
+features = ["rt","atmega8"]
+
+[dependencies.avr-hal-generic]
+path = "../avr-hal/avr-hal-generic"
+
+[profile.dev]
+panic = "abort"
+lto = true
+opt-level = "s"
+
+[profile.release]
+panic = "abort"
+strip = true
+codegen-units = 1
+debug = false
+lto = true
+opt-level = "s"
