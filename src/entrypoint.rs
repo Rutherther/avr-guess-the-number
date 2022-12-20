@@ -257,7 +257,7 @@ impl Game {
         }
 
         self.guessing_number = Some(self.rng.take_u16() % 10000);
-        self.current_number = Some(self.guessing_number.unwrap());
+        self.current_number = Some(0);
         self.seven_segment.set_number(self.current_number.unwrap());
         self.led_matrix.clear();
 
