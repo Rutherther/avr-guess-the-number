@@ -67,7 +67,7 @@ impl LEDMatrix {
 
     pub fn step(&mut self) -> bool {
         let update_unsigned: u8 = self.update_step.try_into().unwrap();
-        let first_position: u8 = update_unsigned * self.width;
+        let first_position: u8 = update_unsigned << 2; // update_unsigned * self.width ... does not work, WTF!?
 
         for x in 0..self.cathodes_count {
             let cathode = &mut self.cathodes[x];
@@ -76,20 +76,24 @@ impl LEDMatrix {
             }
         }
 
+        let mut any_anode = false;
         for x in 0..self.anodes_count {
             let anode = &mut self.anodes[x];
             if let Some(anode) = anode {
                 let x_unsigned: u8 = x.try_into().unwrap();
                 if self.data & (1 << (first_position + x_unsigned)) != 0 {
                     anode.set_high();
+                    any_anode = true;
                 } else {
                     anode.set_low();
                 }
             }
         }
 
-        if let Some(cathode) = &mut self.cathodes[self.update_step] {
-            cathode.set_low();
+        if any_anode {
+            if let Some(cathode) = &mut self.cathodes[self.update_step] {
+                cathode.set_low();
+            }
         }
 
         self.update_step += 1;

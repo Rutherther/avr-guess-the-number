@@ -182,39 +182,27 @@ impl Game {
         let mut current_digits: [u8; DIGITS] = [0, 0, 0, 0];
         let mut guessing_digits: [u8; DIGITS] = [0, 0, 0, 0];
 
-
         for i in 0..DIGITS {
             current_digits[i] = Self::get_digit(current_number, i);
             guessing_digits[i] = Self::get_digit(guessing_number, i);
         }
 
-        for j in 0..2 {
-            self.led_matrix.set(
-                0,
-                1,
-                false
-            );
-        }
-
         for i in 0..DIGITS {
             if current_digits[i] == guessing_digits[i] {
-                self.led_matrix.set(
-                    i.try_into().unwrap(),
-                    0,
-                    true
-                );
+                self.led_matrix.set(i.try_into().unwrap(), LED_MATRIX_CORRECT_ROW, true);
             }
-            else {
-                for j in 0..DIGITS {
-                    if current_digits[j] != guessing_digits[j] && current_digits[i] == guessing_digits[j] {
-                        /*self.led_matrix.set(
-                            i.try_into().unwrap(),
-                            1,
-                            true
-                        );*/
-                    }
-                }
 
+            for j in 0..DIGITS {
+                if i != j &&
+                    current_digits[j] != guessing_digits[i] &&
+                    current_digits[i] == guessing_digits[j]
+                {
+                    self.led_matrix.set(
+                        i.try_into().unwrap(),
+                        LED_MATRIX_INCORRECT_POSITION_ROW,
+                        true
+                    );
+                }
             }
         }
     }
