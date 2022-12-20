@@ -20,6 +20,7 @@ impl FilledSipo {
         self.reset();
     }
 
+    #[inline]
     pub fn push_block(&mut self) {
         while !self.step() {
         }
@@ -38,6 +39,7 @@ impl FilledSipo {
         return false;
     }
 
+    #[inline]
     pub fn reset(&mut self) {
         self.update_step = 0;
     }

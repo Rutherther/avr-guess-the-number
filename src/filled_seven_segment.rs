@@ -29,18 +29,22 @@ impl FilledSevenSegment {
         return (digit % 10).try_into().unwrap();
     }
 
+    #[inline]
     pub fn hide_digit(&mut self, digit_index: usize) {
         self.hide |= 1 << digit_index;
     }
 
+    #[inline]
     pub fn show_digit(&mut self, digit_index: usize) {
         self.hide &= !(1 << digit_index);
     }
 
+    #[inline]
     pub fn hide_all_digits(&mut self) {
         self.hide = 0xFF;
     }
 
+    #[inline]
     pub fn show_all_digits(&mut self) {
         self.hide = 0;
     }
@@ -58,6 +62,7 @@ impl FilledSevenSegment {
         }
     }
 
+    #[inline]
     pub fn show_number_block(&mut self) {
         while !self.step() {}
     }
@@ -101,10 +106,12 @@ impl FilledSevenSegment {
         return false;
     }
 
+    #[inline]
     pub fn reset(&mut self) {
         self.update_step = 0;
     }
 
+    #[inline]
     pub fn clear(&mut self) {
         self.digits = [None, None, None, None];
     }

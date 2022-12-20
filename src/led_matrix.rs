@@ -25,14 +25,17 @@ impl LEDMatrix {
         }
     }
 
+    #[inline]
     fn get_position(width: u8, x: u8, y: u8) -> u8 {
         return width*y + x;
     }
 
+    #[inline]
     pub fn data(&self) -> u8 {
         self.data
     }
 
+    #[inline]
     pub fn set_data(&mut self, data: u8) {
         self.data = data;
     }
@@ -50,11 +53,13 @@ impl LEDMatrix {
         }
     }
 
+    #[inline]
     pub fn add_anode(&mut self, anode: Pin<mode::Output>) {
         self.anodes[self.anodes_count] = Some(anode);
         self.anodes_count += 1;
     }
 
+    #[inline]
     pub fn add_cathode(&mut self, cathode: Pin<mode::Output>) {
         self.cathodes[self.cathodes_count] = Some(cathode);
         self.cathodes_count += 1;
@@ -96,6 +101,7 @@ impl LEDMatrix {
         return false;
     }
 
+    #[inline]
     pub fn clear(&mut self) {
         self.data = 0;
     }

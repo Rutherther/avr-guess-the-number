@@ -20,6 +20,7 @@ impl Sipo {
         return sipo;
     }
 
+    #[inline]
     pub fn setup(&mut self) {
         self.clear();
         self.show();

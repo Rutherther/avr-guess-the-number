@@ -56,18 +56,22 @@ impl SevenSegment {
         }
     }
 
+    #[inline]
     pub fn digits(&self) -> u8 {
         return self.digits;
     }
 
+    #[inline]
     pub fn dp(&self) -> bool {
         return self.dp;
     }
 
+    #[inline]
     pub fn common_cathode(&self) -> bool {
         return self.common_cathode;
     }
 
+    #[inline]
     fn get_digit_selector(digit_count: u8, digit_index: usize) -> u8 {
         let digit_count: usize = digit_count.into();
         return 1 << (digit_count - 1 - digit_index);

@@ -31,6 +31,7 @@ impl Rng {
         self.c
     }
 
+    #[inline]
     pub fn take_u8(&mut self) -> u8 {
         self.randomize()
     }

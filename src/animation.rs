@@ -111,6 +111,7 @@ impl Animation for WinAnimation {
         seven_segment.show_all_digits();
     }
 
+    #[inline]
     fn running(&self) -> bool {
         self.led_step < WIN_ANIMATION_MAX_LED_OUTER_STEP
     }
@@ -166,6 +167,7 @@ impl Animation for HelloAnimation {
         seven_segment.show_all_digits();
     }
 
+    #[inline]
     fn running(&self) -> bool {
         self.outer_step < HELO_ANIMATION_MAX_OUTER_STEP
     }
