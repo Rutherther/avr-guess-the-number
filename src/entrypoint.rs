@@ -1,6 +1,12 @@
 #![no_std]
 #![no_main]
 
+// TODO: seeds to eeprom
+//
+
+extern crate avr_device;
+
+mod eeprom;
 mod animation;
 mod button;
 mod filled_seven_segment;
@@ -78,8 +84,23 @@ fn main() -> ! {
     let btn_confirm = button::Button::create(in_confirm, false);
     // PERIPHERALS END
 
+
+    // load seeds from eeprom
+    let ep = eeprom::Eeprom::new(dp.EEPROM);
+    let mut seeds = [0u8; 3];
+    ep.read(0, &mut seeds);
+    if seeds[0] == 0 && seeds[1] == 0 && seeds[2] == 0 {
+        seeds[0] = 125;
+        seeds[1] = 139;
+        seeds[2] = 45;
+    }
+
     // RNG
-    let rng = rng::Rng::init(123, 111, 45);
+    let mut rng = rng::Rng::init(seeds[0], seeds[1], seeds[2]);
+
+    // write new seeds
+    let next_seeds = [rng.take_u8(), rng.take_u8(), rng.take_u8()];
+    ep.write(0, &next_seeds);
 
     // GAME
     let mut game = Game {
