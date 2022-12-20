@@ -29,6 +29,15 @@ static mut WIN_ANIMATION: animation::WinAnimation = animation::WinAnimation {
     hidden: true,
 };
 
+static mut GUESS_ANIMATION: animation::GuessAnimation = animation::GuessAnimation {
+    step: 0,
+};
+
+static mut DIGIT_INC_ANIMATION: animation::DigitIncrementAnimation = animation::DigitIncrementAnimation {
+    step: 0,
+    digit_index: 0,
+};
+
 #[atmega_hal::entry]
 fn main() -> ! {
     // PERIPHERALS
@@ -88,7 +97,9 @@ fn main() -> ! {
     unsafe {
         HELLO_ANIMATION = animation::HelloAnimation::create();
         WIN_ANIMATION = animation::WinAnimation::create(0);
-        game.animation = Some(&mut HELLO_ANIMATION);
+        GUESS_ANIMATION = animation::GuessAnimation::create();
+        DIGIT_INC_ANIMATION = animation::DigitIncrementAnimation::create(0);
+        game.set_animation(&mut HELLO_ANIMATION);
     }
 
     let mut step: u64 = 0;
@@ -159,6 +170,10 @@ impl Game {
                     }
 
                     self.update_led_matrix();
+                    unsafe {
+                        self.set_animation(&mut GUESS_ANIMATION);
+                        GUESS_ANIMATION.reset();
+                    }
                 }
 
                 let mut btns_pressed: [bool; DIGITS] = [false; DIGITS];
@@ -169,11 +184,24 @@ impl Game {
 
                 for (i, pressed) in btns_pressed.iter().enumerate() {
                     if *pressed {
-                        self.increase_digit(DIGITS - 1 - i);
+                        let digit_index = DIGITS - 1 - i;
+                        self.increase_digit(digit_index);
+                        unsafe {
+                            self.set_animation(&mut DIGIT_INC_ANIMATION);
+                            DIGIT_INC_ANIMATION.reset(digit_index);
+                        }
                     }
                 }
             }
         }
+    }
+
+    pub fn set_animation(&mut self, animation: &'static mut dyn animation::Animation) {
+        if let Some(current_animation) = &mut self.animation {
+            current_animation.cleanup(&mut self.seven_segment, &mut self.led_matrix);
+        }
+
+        self.animation = Some(animation);
     }
 
     fn get_digit(number: u16, digit_index: usize) -> u8 {
@@ -205,7 +233,7 @@ impl Game {
 
             for j in 0..DIGITS {
                 if i != j &&
-                    current_digits[j] != guessing_digits[i] &&
+                    current_digits[j] != guessing_digits[j] &&
                     current_digits[i] == guessing_digits[j]
                 {
                     self.led_matrix.set(
@@ -238,8 +266,8 @@ impl Game {
 
     fn end_current_game(&mut self) {
         unsafe {
+            self.set_animation(&mut WIN_ANIMATION);
             WIN_ANIMATION.reset(self.guessing_number.unwrap());
-            self.animation = Some(&mut WIN_ANIMATION);
         }
         self.cleanup_current_game();
         self.state = GameState::Won;

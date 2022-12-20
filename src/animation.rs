@@ -1,6 +1,16 @@
 use super::filled_seven_segment;
 use super::led_matrix;
 
+const WIN_ANIMATION_MAX_LED_OUTER_STEP: u8 = 5; // max led_step
+const WIN_ANIMATION_MAX_LED_STEP: u8 = 4; // add led_step
+const WIN_ANIMATION_MAX_LED_INNER_STEP: u16 = 2500; // 10000; // add led_quarter
+
+const HELO_ANIMATION_MAX_INNER_STEP: u16 = 5000; // 20000;
+const HELO_ANIMATION_MAX_OUTER_STEP: u16 = 5;
+
+const GUESS_ANIMATION_MAX_STEP: u16 = 3000;
+const DIGIT_INCREMENT_ANIMATION_MAX_STEP: u16 = 1000;
+
 #[derive(PartialEq, Eq)]
 pub enum AnimationState {
     Running,
@@ -27,12 +37,86 @@ pub struct WinAnimation {
     pub hidden: bool
 }
 
-const WIN_ANIMATION_MAX_LED_OUTER_STEP: u8 = 5; // max led_step
-const WIN_ANIMATION_MAX_LED_STEP: u8 = 4; // add led_step
-const WIN_ANIMATION_MAX_LED_INNER_STEP: u16 = 2500; // 10000; // add led_quarter
+pub struct GuessAnimation {
+    pub step: u16
+}
 
-const HELO_ANIMATION_MAX_INNER_STEP: u16 = 5000; // 20000;
-const HELO_ANIMATION_MAX_OUTER_STEP: u16 = 5;
+pub struct DigitIncrementAnimation {
+    pub digit_index: usize,
+    pub step: u16
+}
+
+impl DigitIncrementAnimation {
+    pub fn create(digit_index: usize) -> DigitIncrementAnimation {
+        DigitIncrementAnimation {
+            step: 0,
+            digit_index
+        }
+    }
+
+    pub fn reset(&mut self, digit_index: usize) {
+        self.digit_index = digit_index;
+        self.step = 0;
+    }
+}
+
+impl Animation for DigitIncrementAnimation {
+    fn step(&mut self, seven_segment: &mut filled_seven_segment::FilledSevenSegment, _: &mut led_matrix::LEDMatrix) -> AnimationState {
+        if !self.running() {
+            return AnimationState::End;
+        }
+
+        if self.step == 0 {
+            seven_segment.hide_digit(self.digit_index);
+        }
+        self.step += 1;
+
+        AnimationState::Running
+    }
+
+    fn cleanup(&mut self, seven_segment: &mut filled_seven_segment::FilledSevenSegment, _: &mut led_matrix::LEDMatrix) {
+        seven_segment.show_digit(self.digit_index);
+    }
+
+    fn running(&self) -> bool {
+        self.step < DIGIT_INCREMENT_ANIMATION_MAX_STEP
+    }
+}
+
+impl GuessAnimation {
+    pub fn create() -> GuessAnimation {
+        GuessAnimation {
+            step: 0
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.step = 0;
+    }
+}
+
+impl Animation for GuessAnimation {
+    fn step(&mut self, seven_segment: &mut filled_seven_segment::FilledSevenSegment, _: &mut led_matrix::LEDMatrix) -> AnimationState {
+        if !self.running() {
+            return AnimationState::End;
+        }
+
+        if self.step == 0 {
+            seven_segment.hide_all_digits();
+        }
+        self.step += 1;
+
+        AnimationState::Running
+    }
+
+    fn cleanup(&mut self, seven_segment: &mut filled_seven_segment::FilledSevenSegment, _: &mut led_matrix::LEDMatrix) {
+        seven_segment.show_all_digits();
+    }
+
+    fn running(&self) -> bool {
+        self.step < GUESS_ANIMATION_MAX_STEP
+    }
+}
 
 impl WinAnimation {
     pub fn create(number: u16) -> WinAnimation {
