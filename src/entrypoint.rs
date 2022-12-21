@@ -281,17 +281,33 @@ impl Game {
         self.current_number = None;
     }
 
+    #[inline]
+    fn generate_number(&mut self) -> [u8; 4] {
+        let first = self.rng.take_u8();
+        let second = self.rng.take_u8();
+
+        let mut digits = [
+            ((first >> 4) & 0xF) + 1,
+            first & 0xF,
+            (second >> 4) & 0xF,
+            second & 0xF];
+
+        for digit in digits.iter_mut() {
+            if *digit >= 10 {
+                *digit -= 10;
+            }
+        }
+
+        digits
+    }
+
     fn start_new_game(&mut self) {
         if let Some(animation) = &mut self.animation {
             animation.cleanup(&mut self.seven_segment, &mut self.led_matrix);
             self.animation = None;
         }
 
-        let mut guessing_number = [0; DIGITS];
-        for i in 0..DIGITS {
-            guessing_number[i] = self.rng.take_u8() % 10;
-        }
-
+        let guessing_number = self.generate_number();
         let current_number = [0; 4];
 
         self.guessing_number = Some(guessing_number);
