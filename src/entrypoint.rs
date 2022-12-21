@@ -6,7 +6,6 @@
 
 extern crate avr_device;
 
-mod eeprom;
 mod animation;
 mod button;
 mod filled_seven_segment;
@@ -86,7 +85,7 @@ fn main() -> ! {
 
 
     // load seeds from eeprom
-    let ep = eeprom::Eeprom::new(dp.EEPROM);
+    let mut ep = atmega_hal::Eeprom::new(dp.EEPROM);
     let mut seeds = [0u8; 3];
     ep.read(0, &mut seeds);
     if seeds[0] == 0 && seeds[1] == 0 && seeds[2] == 0 {
