@@ -91,13 +91,10 @@ impl SevenSegment {
             segments = !segments;
         }
 
-        let segments: u16 = segments.into();
-        let digit_selector: u16 = digit_selector.into();
-
         if self.dp {
-            sipo.set_data(digit_selector << 8 | segments);
+            sipo.set_data([digit_selector, segments]);
         } else {
-            sipo.set_data(digit_selector << 7 | (segments & 0x7F));
+            sipo.set_data([digit_selector >> 1, (digit_selector & 0x01 << 7) | (segments & 0x7F)]);
         }
         return true;
     }
