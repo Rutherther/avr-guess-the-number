@@ -3,13 +3,13 @@ use super::led_matrix;
 
 const WIN_ANIMATION_MAX_LED_OUTER_STEP: u8 = 5; // max led_step
 const WIN_ANIMATION_MAX_LED_STEP: u8 = 4; // add led_step
-const WIN_ANIMATION_MAX_LED_INNER_STEP: u16 = 2500; // 10000; // add led_quarter
+const WIN_ANIMATION_MAX_LED_INNER_STEP: u8 = 10; // multiplied by 256 internally // add led_quarter
 
-const HELO_ANIMATION_MAX_INNER_STEP: u16 = 5000; // 20000;
-const HELO_ANIMATION_MAX_OUTER_STEP: u16 = 5;
+const HELO_ANIMATION_MAX_INNER_STEP: u8 = 20; // multiplied by 256 internally
+const HELO_ANIMATION_MAX_OUTER_STEP: u8 = 5;
 
-const GUESS_ANIMATION_MAX_STEP: u16 = 3000;
-const DIGIT_INCREMENT_ANIMATION_MAX_STEP: u16 = 1000;
+const GUESS_ANIMATION_MAX_STEP: u8 = 12; // multiplied by 256 internally
+const DIGIT_INCREMENT_ANIMATION_MAX_STEP: u8 = 4; // multiplied by 256 internally
 
 #[derive(PartialEq, Eq)]
 pub enum AnimationState {
@@ -24,32 +24,37 @@ pub trait Animation {
 }
 
 pub struct HelloAnimation {
-    pub inner_step: u16,
-    pub outer_step: u16,
-    pub hidden: bool
+    pub inner_step: u8,
+    pub outer_step: u8,
+    pub hidden: bool,
+    pub internal_step: u8,
 }
 
 pub struct WinAnimation {
-    pub number: u16,
+    pub number: [u8; 4],
     pub led_step: u8,
     pub led_quarter: u8,
-    pub led_inner: u16,
-    pub hidden: bool
+    pub led_inner: u8,
+    pub hidden: bool,
+    pub internal_step: u8,
 }
 
 pub struct GuessAnimation {
-    pub step: u16
+    pub step: u8,
+    pub internal_step: u8,
 }
 
 pub struct DigitIncrementAnimation {
     pub digit_index: usize,
-    pub step: u16
+    pub step: u8,
+    pub internal_step: u8,
 }
 
 impl DigitIncrementAnimation {
     pub fn create(digit_index: usize) -> DigitIncrementAnimation {
         DigitIncrementAnimation {
             step: 0,
+            internal_step: 0,
             digit_index
         }
     }
@@ -69,7 +74,12 @@ impl Animation for DigitIncrementAnimation {
         if self.step == 0 {
             seven_segment.hide_digit(self.digit_index);
         }
-        self.step += 1;
+
+        self.internal_step += 1;
+        if self.internal_step == 255 {
+            self.step += 1;
+            self.internal_step = 0;
+        }
 
         AnimationState::Running
     }
@@ -86,7 +96,8 @@ impl Animation for DigitIncrementAnimation {
 impl GuessAnimation {
     pub fn create() -> GuessAnimation {
         GuessAnimation {
-            step: 0
+            step: 0,
+            internal_step: 0
         }
     }
 
@@ -104,7 +115,12 @@ impl Animation for GuessAnimation {
         if self.step == 0 {
             seven_segment.hide_all_digits();
         }
-        self.step += 1;
+
+        self.internal_step += 1;
+        if self.internal_step == 255 {
+            self.step += 1;
+            self.internal_step = 0;
+        }
 
         AnimationState::Running
     }
@@ -119,17 +135,18 @@ impl Animation for GuessAnimation {
 }
 
 impl WinAnimation {
-    pub fn create(number: u16) -> WinAnimation {
+    pub fn create(number: [u8; 4]) -> WinAnimation {
         WinAnimation {
             number,
             led_inner: 0,
             led_quarter: 0,
             led_step: 0,
-            hidden: true
+            hidden: true,
+            internal_step: 0
         }
     }
 
-    pub fn reset(&mut self, number: u16) {
+    pub fn reset(&mut self, number: [u8; 4]) {
         self.number = number;
         self.led_step = 0;
         self.led_quarter = 0;
@@ -162,17 +179,17 @@ impl Animation for WinAnimation {
         led_matrix.clear();
 
         if self.led_step < 2 {
-            led_matrix.set(self.led_quarter, self.led_step, true);
+            led_matrix.set(self.led_quarter, self.led_step);
         } else if self.led_step == 2 {
-            led_matrix.set(self.led_quarter, 0, true);
-            led_matrix.set(self.led_quarter, 1, true);
+            led_matrix.set(self.led_quarter, 0);
+            led_matrix.set(self.led_quarter, 1);
         } else if self.led_step == 3 {
-            led_matrix.set(3 - self.led_quarter, 0, true);
-            led_matrix.set(3 - self.led_quarter, 1, true);
+            led_matrix.set(3 - self.led_quarter, 0);
+            led_matrix.set(3 - self.led_quarter, 1);
         } else {
             for i in 0..=self.led_quarter {
-                led_matrix.set(i, 0, true);
-                led_matrix.set(i, 1, true);
+                led_matrix.set(i, 0);
+                led_matrix.set(i, 1);
             }
         }
 
@@ -186,7 +203,11 @@ impl Animation for WinAnimation {
             self.hidden = !self.hidden;
         }
 
-        self.led_inner += 1;
+        self.internal_step += 1;
+        if self.internal_step == 255 {
+            self.led_inner += 1;
+            self.internal_step = 0;
+        }
         AnimationState::Running
     }
 
@@ -206,6 +227,7 @@ impl HelloAnimation {
         HelloAnimation {
             inner_step: 0,
             outer_step: 0,
+            internal_step: 0,
             hidden: false
         }
     }
@@ -242,7 +264,11 @@ impl Animation for HelloAnimation {
             return AnimationState::End
         }
 
-        self.inner_step += 1;
+        self.internal_step += 1;
+        if self.internal_step == 255 {
+            self.inner_step += 1;
+            self.internal_step = 0;
+        }
         AnimationState::Running
     }
 

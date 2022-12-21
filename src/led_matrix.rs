@@ -27,7 +27,11 @@ impl LEDMatrix {
 
     #[inline]
     fn get_position(width: u8, x: u8, y: u8) -> u8 {
-        return width*y + x;
+        if y > 0 {
+            return width + x;
+        }
+
+        return x;
     }
 
     #[inline]
@@ -40,17 +44,8 @@ impl LEDMatrix {
         self.data = data;
     }
 
-    pub fn set(&mut self, x: u8, y: u8, value: bool) {
-        if x >= self.width || y >= self.height {
-            return
-        }
-
-        let mask = 1 << Self::get_position(self.width, x, y);
-        if value {
-            self.data |= mask;
-        } else {
-            self.data &= !mask;
-        }
+    pub fn set(&mut self, x: u8, y: u8) {
+        self.data |= 1 << Self::get_position(self.width, x, y);
     }
 
     #[inline]

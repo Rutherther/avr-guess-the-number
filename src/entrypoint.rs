@@ -25,22 +25,26 @@ static mut HELLO_ANIMATION: animation::HelloAnimation = animation::HelloAnimatio
     inner_step: 0,
     outer_step: 0,
     hidden: false,
+    internal_step: 0,
 };
 static mut WIN_ANIMATION: animation::WinAnimation = animation::WinAnimation {
-    number: 0,
+    number: [0; 4],
     led_step: 0,
     led_quarter: 0,
     led_inner: 0,
     hidden: true,
+    internal_step: 0,
 };
 
 static mut GUESS_ANIMATION: animation::GuessAnimation = animation::GuessAnimation {
     step: 0,
+    internal_step: 0,
 };
 
 static mut DIGIT_INC_ANIMATION: animation::DigitIncrementAnimation = animation::DigitIncrementAnimation {
     step: 0,
     digit_index: 0,
+    internal_step: 0,
 };
 
 #[atmega_hal::entry]
@@ -116,7 +120,7 @@ fn main() -> ! {
 
     unsafe {
         HELLO_ANIMATION = animation::HelloAnimation::create();
-        WIN_ANIMATION = animation::WinAnimation::create(0);
+        WIN_ANIMATION = animation::WinAnimation::create([0; 4]);
         GUESS_ANIMATION = animation::GuessAnimation::create();
         DIGIT_INC_ANIMATION = animation::DigitIncrementAnimation::create(0);
         game.set_animation(&mut HELLO_ANIMATION);
@@ -160,11 +164,11 @@ pub struct Game {
     seven_segment: filled_seven_segment::FilledSevenSegment,
     led_matrix: led_matrix::LEDMatrix,
     state: GameState,
-    guessing_number: Option<u16>,
-    current_number: Option<u16>,
+    guessing_number: Option<[u8; DIGITS]>,
+    current_number: Option<[u8; DIGITS]>,
     animation: Option<&'static mut dyn animation::Animation>,
     rng: rng::Rng,
-    buttons: [button::Button; 4],
+    buttons: [button::Button; DIGITS],
     confirm: button::Button,
 }
 
@@ -224,31 +228,14 @@ impl Game {
         self.animation = Some(animation);
     }
 
-    fn get_digit(number: u16, digit_index: usize) -> u8 {
-        let mut digit = number;
-        for _ in 0..digit_index {
-            digit /= 10;
-        }
-
-        (digit % 10).try_into().unwrap()
-    }
-
     fn update_led_matrix(&mut self) {
         self.led_matrix.clear();
-        let current_number = self.current_number.unwrap();
-        let guessing_number = self.guessing_number.unwrap();
-
-        let mut current_digits: [u8; DIGITS] = [0, 0, 0, 0];
-        let mut guessing_digits: [u8; DIGITS] = [0, 0, 0, 0];
-
-        for i in 0..DIGITS {
-            current_digits[i] = Self::get_digit(current_number, i);
-            guessing_digits[i] = Self::get_digit(guessing_number, i);
-        }
+        let current_digits = self.current_number.unwrap();
+        let guessing_digits = self.guessing_number.unwrap();
 
         for i in 0..DIGITS {
             if current_digits[i] == guessing_digits[i] {
-                self.led_matrix.set(i.try_into().unwrap(), LED_MATRIX_CORRECT_ROW, true);
+                self.led_matrix.set(i.try_into().unwrap(), LED_MATRIX_CORRECT_ROW);
             }
 
             for j in 0..DIGITS {
@@ -258,8 +245,7 @@ impl Game {
                 {
                     self.led_matrix.set(
                         i.try_into().unwrap(),
-                        LED_MATRIX_INCORRECT_POSITION_ROW,
-                        true
+                        LED_MATRIX_INCORRECT_POSITION_ROW
                     );
                 }
             }
@@ -267,21 +253,18 @@ impl Game {
     }
 
     fn increase_digit(&mut self, digit_index: usize) {
-        let current_number = self.current_number.unwrap();
-        let mut order = 1;
-        for _ in 0..digit_index {
-            order *= 10;
+        let mut current_number = self.current_number.unwrap();
+
+        let mut current_digit = current_number[digit_index];
+        current_digit += 1;
+
+        if current_digit == 10 {
+            current_digit = 0;
         }
 
-        let current_digit = Self::get_digit(current_number, digit_index);
-        let new_digit: u16 = ((current_digit + 1) % 10).into();
-
-        let trimmed_number = current_number % order;
-        let mut new_number = current_number - (current_number % (order * 10));
-        new_number += new_digit * order + trimmed_number;
-
-        self.current_number = Some(new_number);
-        self.seven_segment.set_number(new_number);
+        current_number[digit_index] = current_digit;
+        self.current_number = Some(current_number);
+        self.seven_segment.set_number(current_number);
     }
 
     fn end_current_game(&mut self) {
@@ -304,9 +287,16 @@ impl Game {
             self.animation = None;
         }
 
-        self.guessing_number = Some(self.rng.take_u16() % 10000);
-        self.current_number = Some(0);
-        self.seven_segment.set_number(self.current_number.unwrap());
+        let mut guessing_number = [0; DIGITS];
+        for i in 0..DIGITS {
+            guessing_number[i] = self.rng.take_u8() % 10;
+        }
+
+        let current_number = [0; 4];
+
+        self.guessing_number = Some(guessing_number);
+        self.current_number = Some(current_number);
+        self.seven_segment.set_number(current_number);
         self.led_matrix.clear();
 
         self.state = GameState::Play;

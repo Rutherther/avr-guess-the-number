@@ -20,15 +20,6 @@ impl FilledSevenSegment {
         }
     }
 
-    fn get_digit(digit: u16, digit_index: usize) -> u8 {
-        let mut digit = digit;
-        for _ in 0..digit_index {
-            digit /= 10;
-        }
-
-        return (digit % 10).try_into().unwrap();
-    }
-
     #[inline]
     pub fn hide_digit(&mut self, digit_index: usize) {
         self.hide |= 1 << digit_index;
@@ -55,10 +46,9 @@ impl FilledSevenSegment {
         }
     }
 
-    pub fn set_number(&mut self, number: u16) {
-        for i in 0..4_usize {
-            let digit = Self::get_digit(number, i);
-            self.digits[i] = Some(digit);
+    pub fn set_number(&mut self, number: [u8; 4]) {
+        for (i, digit) in number.iter().enumerate() {
+            self.digits[i] = Some(*digit);
         }
     }
 
