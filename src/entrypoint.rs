@@ -4,8 +4,6 @@
 // TODO: seeds to eeprom
 //
 
-extern crate avr_device;
-
 mod animation;
 mod button;
 mod filled_seven_segment;
@@ -53,10 +51,10 @@ fn main() -> ! {
     let dp = atmega_hal::Peripherals::take().unwrap();
     let pins = atmega_hal::pins!(dp);
 
-    let srclr = pins.pc2.into_output().downgrade();
-    let srclk = pins.pc3.into_output().downgrade();
-    let rclk = pins.pc4.into_output().downgrade();
-    let ser = pins.pc5.into_output().downgrade();
+    let srclr = pins.pd2.into_output().downgrade();
+    let srclk = pins.pd1.into_output().downgrade();
+    let rclk = pins.pd0.into_output().downgrade();
+    let ser = pins.pd3.into_output().downgrade();
 
     let shift_register = sipo::Sipo::create(srclk, srclr, ser, rclk);
 
@@ -66,17 +64,17 @@ fn main() -> ! {
         filled_seven_segment::FilledSevenSegment::create(seven_segment, shift_register);
 
     let mut matrix = led_matrix::LEDMatrix::create(4, 2);
-    matrix.add_anode(pins.pd3.into_output().downgrade());
-    matrix.add_anode(pins.pd2.into_output().downgrade());
-    matrix.add_anode(pins.pd1.into_output().downgrade());
-    matrix.add_anode(pins.pd0.into_output().downgrade());
+    matrix.add_anode(pins.pc0.into_output().downgrade());
+    matrix.add_anode(pins.pc1.into_output().downgrade());
+    matrix.add_anode(pins.pc2.into_output().downgrade());
+    matrix.add_anode(pins.pc3.into_output().downgrade());
 
-    matrix.add_cathode(pins.pd5.into_output().downgrade());
-    matrix.add_cathode(pins.pd6.into_output().downgrade());
+    matrix.add_cathode(pins.pc5.into_output().downgrade());
+    matrix.add_cathode(pins.pc4.into_output().downgrade());
 
-    let in_1 = pins.pc1.into_pull_up_input().downgrade().forget_imode();
-    let in_2 = pins.pb2.into_pull_up_input().downgrade().forget_imode();
-    let in_3 = pins.pb1.into_pull_up_input().downgrade().forget_imode();
+    let in_1 = pins.pd4.into_pull_up_input().downgrade().forget_imode();
+    let in_2 = pins.pd5.into_pull_up_input().downgrade().forget_imode();
+    let in_3 = pins.pd6.into_pull_up_input().downgrade().forget_imode();
     let in_4 = pins.pd7.into_pull_up_input().downgrade().forget_imode();
     let in_confirm = pins.pb0.into_pull_up_input().downgrade().forget_imode();
 
@@ -126,7 +124,7 @@ fn main() -> ! {
         game.set_animation(&mut HELLO_ANIMATION);
     }
 
-    let mut step: u64 = 0;
+    let mut step: u8 = 0;
     loop {
         // Show seven segment, matrix data
         step += 1;
