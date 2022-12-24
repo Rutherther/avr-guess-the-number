@@ -15,6 +15,10 @@ panic-halt = "0.2.0"
 ufmt = "0.1.0"
 nb = "0.1.2"
 
+[dependencies.avr-device]
+path = "../avr-device"
+features = ["rt","atmega8"]
+
 [dependencies.atmega-hal]
 path = "../avr-hal/mcu/atmega-hal"
 features = ["rt","atmega8"]
