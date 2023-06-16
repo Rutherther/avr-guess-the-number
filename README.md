@@ -13,13 +13,12 @@ The game contains simple animations played
 on the start as well as after successfully
 guessing the number.
 
-## Photo of the pcb
-<img src="pcb/pcb_photo.jpg" width=200>
-<img src="pcb/pcb_powered_up_photo.jpg" width=200>
+## Photo of the final project
+<img src="pcb/pcb_photo.jpg" height=400 align=left>
+<img src="pcb/pcb_powered_up_photo.jpg" height=400>
 
 ## Structure of the repository
 The repository contains code of the firmware written in Rust
 and the pcb project made in Altium Designer.
 For better accessibility to the schematic and PCB,
 a pdf with these has been added as well.
-
