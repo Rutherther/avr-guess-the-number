@@ -13,7 +13,7 @@ The game contains simple animations played
 on the start as well as after successfully
 guessing the number.
 
-## Photo of the final project
+## Photo of the final product
 <img src="pcb/pcb_photo.jpg" height=400 align=left>
 <img src="pcb/pcb_powered_up_photo.jpg" height=400>
 
