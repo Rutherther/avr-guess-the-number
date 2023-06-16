@@ -16,11 +16,13 @@ ufmt = "0.1.0"
 nb = "0.1.2"
 
 [dependencies.atmega-hal]
-path = "../avr-hal/mcu/atmega-hal"
 features = ["rt","atmega8"]
+git = "https://github.com/Rahix/avr-hal.git"
+rev = "3c02df9df80e7585765644a87076680a2d99b29a"
 
 [dependencies.avr-hal-generic]
-path = "../avr-hal/avr-hal-generic"
+git = "https://github.com/Rahix/avr-hal.git"
+rev = "3c02df9df80e7585765644a87076680a2d99b29a"
 
 [profile.dev]
 panic = "abort"

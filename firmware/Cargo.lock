@@ -5,6 +5,7 @@ version = 3
 [[package]]
 name = "atmega-hal"
 version = "0.1.0"
+source = "git+https://github.com/Rahix/avr-hal.git?rev=3c02df9df80e7585765644a87076680a2d99b29a#3c02df9df80e7585765644a87076680a2d99b29a"
 dependencies = [
  "avr-device",
  "avr-hal-generic",
@@ -12,9 +13,9 @@ dependencies = [
 
 [[package]]
 name = "avr-device"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "deb45711b7227cb3f799c40c4e0e8beea1765acff8d06a14bb3479c1a549d8b0"
+checksum = "644690f9699830f0efce38ca9d41c7ad51a6ec1829364dd272638938c953673a"
 dependencies = [
  "avr-device-macros",
  "bare-metal",
@@ -24,9 +25,9 @@ dependencies = [
 
 [[package]]
 name = "avr-device-macros"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87c428a2384981d8460668c48c766ff18e7e91d2d467f7b103151984ee952d38"
+checksum = "ba8b49941a5148cec432d5180d205871f0132f9f15b7225a9f3ad9e2bae026cb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -36,6 +37,7 @@ dependencies = [
 [[package]]
 name = "avr-hal-generic"
 version = "0.1.0"
+source = "git+https://github.com/Rahix/avr-hal.git?rev=3c02df9df80e7585765644a87076680a2d99b29a#3c02df9df80e7585765644a87076680a2d99b29a"
 dependencies = [
  "avr-device",
  "cfg-if 0.1.10",
